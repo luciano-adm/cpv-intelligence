@@ -300,10 +300,11 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
   ['rota','rota embarcavel','rotograma','rotograma falado'],
   ['jornada','relatorio jornada','macros','macro','posicoes'],
   ['tms','controle de custo','torre de controle'],
-  ['integracao','webservice','comandos']
+  ['integracao','webservice','comandos'],
+  ['rf','plataforma rf','radiofrequencia']
  ];
  function termsFor(query){
-  const q=normalize(query), words=q.split(/[^a-z0-9]+/).filter(w=>w.length>2);
+  const q=normalize(query), words=q.split(/[^a-z0-9]+/).filter(w=>w.length>=2);
   const expanded=new Set(words);
   groups.forEach(g=>{if(g.some(x=>q.includes(normalize(x))))g.forEach(x=>expanded.add(normalize(x)))});
   if(q.includes('embar'))['motorista','sasgc','telemetria','cadastrar','embarcar'].forEach(x=>expanded.add(x));
@@ -320,7 +321,7 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
    const text=normalize(c.innerText);
    let score=0;
    if(text.includes(q))score+=10;
-   terms.forEach(t=>{if(t.length>2&&text.includes(t))score+=2});
+   terms.forEach(t=>{if(t.length>=2&&text.includes(t))score+=2});
    return {c,score};
   }).sort((a,b)=>b.score-a.score);
   const max=ranked[0]?.score||0;
