@@ -287,11 +287,11 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
 (function(){
  const input=document.getElementById('q');
  const form=document.getElementById('searchForm');
- const cards=[...document.querySelectorAll('.card')];
+ const cards=Array.from(document.querySelectorAll('.grid .card'));
  const status=document.getElementById('searchStatus');
  const total=document.getElementById('totalCount');
- const normalize=s=>(s||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'');
- const groups=[
+ const normalize=value=>(value||'').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/\p{M}/gu,'').trim();
+ const synonyms=[
   ['motorista','motoristas','condutor','condutores','embarque','embarcar','cadastrar motorista','vincular rosto'],
   ['telemetria','blackbox','black box','sasgc','sasmdt','rastreador'],
   ['camera','cameras','smart camera','video','alerta camera','historico de audios'],
@@ -303,36 +303,56 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
   ['integracao','webservice','comandos'],
   ['rf','plataforma rf','radiofrequencia']
  ];
- function termsFor(query){
-  const q=normalize(query), words=q.split(/[^a-z0-9]+/).filter(w=>w.length>=2);
-  const expanded=new Set(words);
-  groups.forEach(g=>{if(g.some(x=>q.includes(normalize(x))))g.forEach(x=>expanded.add(normalize(x)))});
-  if(q.includes('embar'))['motorista','sasgc','telemetria','cadastrar','embarcar'].forEach(x=>expanded.add(x));
-  if(q.includes('cerca'))['cerca','eletronica'].forEach(x=>expanded.add(x));
-  if(q.includes('camera'))['camera','cameras','smart'].forEach(x=>expanded.add(x));
-  if(q.includes('jornada'))['jornada','relatorio','macro','tms'].forEach(x=>expanded.add(x));
-  return [...expanded];
- }
  function search(query){
-  const q=normalize(query).trim();
-  if(!q){cards.forEach(c=>c.style.display='');status.textContent='Exibindo todos os materiais disponíveis.';total.textContent=cards.length+' materiais';return}
-  const terms=termsFor(q);
-  const ranked=cards.map(c=>{
-   const text=normalize(c.innerText);
+  const q=normalize(query);
+  if(!q){
+   cards.forEach(card=>card.style.display='');
+   status.textContent='Exibindo todos os materiais disponíveis.';
+   total.textContent=cards.length+' materiais';
+   return;
+  }
+  const tokens=q.split(/[^a-z0-9]+/).filter(Boolean);
+  const expanded=new Set(tokens);
+  synonyms.forEach(group=>{
+   if(group.some(term=>normalize(term)===q || q.includes(normalize(term)) || normalize(term).includes(q))){
+    group.forEach(term=>expanded.add(normalize(term)));
+   }
+  });
+  const ranked=cards.map(card=>{
+   const title=normalize(card.querySelector('h3')?.textContent||'');
+   const body=normalize(card.textContent||'');
    let score=0;
-   if(text.includes(q))score+=10;
-   terms.forEach(t=>{if(t.length>=2&&text.includes(t))score+=2});
-   return {c,score};
-  }).sort((a,b)=>b.score-a.score);
-  const max=ranked[0]?.score||0;
+   if(title===q) score+=100;
+   if(title.includes(q)) score+=50;
+   tokens.forEach(token=>{
+    if(title.split(/[^a-z0-9]+/).includes(token)) score+=30;
+    else if(title.includes(token)) score+=15;
+    else if(body.includes(token)) score+=5;
+   });
+   expanded.forEach(term=>{
+    if(term.length>=2 && (title.split(/[^a-z0-9]+/).includes(term) || title.includes(term))) score+=12;
+   });
+   return {card,score};
+  }).sort((x,y)=>y.score-x.score);
+  const best=ranked[0]?.score||0;
   let shown=0;
-  ranked.forEach(({c,score})=>{const visible=score>0&&score>=Math.max(2,max-4);c.style.display=visible?'':'none';if(visible)shown++});
+  ranked.forEach(({card,score})=>{
+   const visible=score>0 && score>=Math.max(5,best-25);
+   card.style.display=visible?'':'none';
+   if(visible) shown++;
+  });
   total.textContent=shown+' de '+cards.length+' materiais';
-  status.textContent=shown?shown+' material(is) relacionado(s) à sua busca. Confira os títulos e abra o conteúdo original.':'Não encontrei um material com esses termos. Tente palavras como motorista, telemetria, câmera, GF ou jornada.';
+  status.textContent=shown
+   ? shown+' material(is) relacionado(s) à sua busca.'
+   : 'Não encontrei materiais. Tente outra palavra ou sigla.';
  }
- form.addEventListener('submit',e=>{e.preventDefault();search(input.value)});
+ form.addEventListener('submit',event=>{event.preventDefault();search(input.value);});
  input.addEventListener('input',()=>search(input.value));
- document.querySelectorAll('.suggestion').forEach(b=>b.addEventListener('click',()=>{input.value=b.dataset.query;search(input.value);input.focus()}));
+ document.querySelectorAll('.suggestion').forEach(button=>button.addEventListener('click',()=>{
+  input.value=button.dataset.query||'';
+  search(input.value);
+  input.focus();
+ }));
  search('');
 })();
 </script></body></html>
