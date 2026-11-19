@@ -37,6 +37,16 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
 .bot-messages{padding:14px;overflow:auto;flex:1;background:#f5f8fc}.bot-msg{max-width:90%;padding:11px 13px;border-radius:13px;margin:0 0 10px;font-size:13px;line-height:1.5;white-space:pre-wrap}.bot-msg.bot{background:#fff;border:1px solid #e1e9f1;color:#233e59}.bot-msg.user{background:#dceeff;color:#123e68;margin-left:auto}.bot-results{display:grid;gap:8px;margin:8px 0 12px}.bot-result{background:#fff;border:1px solid #e0e8f0;border-radius:10px;padding:10px;font-size:12px}.bot-result strong{display:block;color:#183b5d;margin-bottom:7px}.bot-result a{display:inline-block;margin:2px 5px 0 0;padding:7px 9px;font-size:11px}.bot-input{display:flex;gap:8px;padding:12px;border-top:1px solid #e6edf4;background:#fff}.bot-input input{flex:1;min-width:0;border:1px solid #cbd8e5;border-radius:10px;padding:11px;font-size:13px}.bot-input button{border:0;border-radius:10px;background:#0055a4;color:#fff;padding:0 14px;font-weight:700}
 @media(max-width:520px){.bot-launch{right:14px;bottom:14px}.bot-panel{right:14px;bottom:76px}}
 
+
+.network-card{max-width:1180px;margin:0 auto 22px;padding:0 0 18px}
+.network-inner{background:#fff;border:1px solid #e3ebf3;border-radius:15px;padding:19px;box-shadow:0 3px 12px rgba(24,55,84,.05)}
+.network-inner h2{font-size:19px;margin:0 0 6px;color:#17314d}.network-inner p{font-size:13px;color:#6b7e92;margin:0 0 13px;line-height:1.5}
+.network-actions{display:flex;gap:9px;flex-wrap:wrap}.network-actions a{font-size:12px;padding:10px 13px;display:inline-flex;align-items:center;gap:6px}
+.network-open{background:#0055a4}.network-share{background:#168c58}
+.network-frame{display:none;margin-top:14px;border:1px solid #e2eaf2;border-radius:11px;overflow:hidden}
+.network-frame.open{display:block}.network-frame iframe{width:100%;height:480px;border:0;display:block}
+@media(max-width:700px){.network-card{padding:0 12px 18px}.network-inner{padding:16px}.network-frame iframe{height:420px}}
+
 </style></head><body>
 <header class="topbar">
   <div class="brand"><div class="brand-mark">CPV</div><div><h1>CPV Intelligence</h1><p>Central inteligente de treinamentos e conhecimento</p></div></div>
@@ -59,6 +69,24 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
   </div>
   <div class="search-status" id="searchStatus" aria-live="polite">Exibindo todos os materiais disponíveis.</div>
 </section>
+
+<section class="network-card" id="rede-tecnica">
+ <div class="network-inner">
+  <div class="eyebrow">LOCALIZAÇÃO DE ATENDIMENTO</div>
+  <h2>📍 Rede Técnica Michelin</h2>
+  <p>Consulte os pontos de atendimento da Rede Técnica no mapa. Você pode abrir em tela cheia ou compartilhar o endereço pelo WhatsApp.</p>
+  <div class="network-actions">
+   <a class="network-open" href="https://www.google.com/maps/d/u/0/viewer?hl=pt-BR&mid=1Ux-DYgmBCWSoKM-C8gmCCv3_enk&ll=-14.420184631998666%2C-57.18955616679689&z=7" target="_blank" rel="noopener">🗺️ Abrir mapa completo</a>
+   <a class="network-share" href="https://wa.me/?text=Consulte%20a%20Rede%20T%C3%A9cnica%20Michelin%3A%20https%3A%2F%2Fwww.google.com%2Fmaps%2Fd%2Fu%2F0%2Fviewer%3Fhl%3Dpt-BR%26mid%3D1Ux-DYgmBCWSoKM-C8gmCCv3_enk%26ll%3D-14.420184631998666%252C-57.18955616679689%26z%3D7" target="_blank" rel="noopener">📲 Compartilhar no WhatsApp</a>
+   <button type="button" class="network-open" id="toggleNetworkMap" style="border:0;border-radius:6px;color:#fff;cursor:pointer">👁️ Visualizar aqui</button>
+  </div>
+  <div class="network-frame" id="networkFrame">
+   <iframe title="Mapa da Rede Técnica Michelin" src="https://www.google.com/maps/d/embed?mid=1Ux-DYgmBCWSoKM-C8gmCCv3_enk&ehbc=2E312F" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+  </div>
+  <p style="margin-top:10px;font-size:11px">Se o mapa não carregar incorporado, utilize o botão “Abrir mapa completo”.</p>
+ </div>
+</section>
+
 <section class="library-heading"><div><h2>Biblioteca de treinamentos</h2><p>Vídeos, tutoriais e manuais organizados em um só lugar.</p></div><div class="total" id="totalCount"> 79 materiais</div></section>
 <div class="grid">
 <div class="card">
@@ -370,6 +398,9 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
   search(input.value);
   input.focus();
  }));
+
+ const mapToggle=document.getElementById('toggleNetworkMap');
+ if(mapToggle){mapToggle.addEventListener('click',()=>{const frame=document.getElementById('networkFrame');frame.classList.toggle('open');mapToggle.textContent=frame.classList.contains('open')?'🙈 Ocultar mapa':'👁️ Visualizar aqui';});}
  // Conversa local: usa os mesmos 79 materiais já cadastrados no portal.
  const panel=document.getElementById('botPanel');
  const messages=document.getElementById('botMessages');
