@@ -1,0 +1,17 @@
+{
+  "name": "CPV Bot - CPV Intelligence",
+  "short_name": "CPV Bot",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0055a4",
+  "description": "Assistente de treinamentos Michelin Connected Fleet.",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
