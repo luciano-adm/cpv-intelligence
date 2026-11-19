@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#0055a4"><link rel="icon" href="./icon.svg" type="image/svg+xml">
 <title>CPV Intelligence</title>
 <style>
 body{font-family:Arial;background:#f3f5f7;margin:0}
@@ -27,6 +28,14 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
 .card{border:1px solid #e5ebf2;border-radius:13px;box-shadow:0 3px 12px rgba(24,55,84,.05);padding:17px;transition:transform .15s,box-shadow .15s}.card:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(24,55,84,.10)}.card h3{font-size:14px;line-height:1.45;color:#203c59;margin:0 0 14px;min-height:38px}
 .acoes{gap:8px;margin-top:12px}.acoes a{font-size:11px;padding:9px 11px;display:inline-flex;align-items:center;justify-content:center}.abrir{background:#0055a4}.zap{background:#168c58}
 @media(max-width:700px){.topbar{padding:17px 16px}.top-pill{display:none}.assistant{margin:16px 12px;padding:21px 16px}.assistant h2{font-size:22px}.search-form{flex-wrap:wrap}.search-form input{width:calc(100% - 50px)}.search-form button{width:100%}.library-heading{padding:0 14px}.grid{padding:10px 12px 28px}}
+
+
+/* CPV Bot */
+.bot-launch{position:fixed;right:22px;bottom:22px;z-index:1000;border:0;border-radius:999px;background:#0055a4;color:#fff;padding:15px 20px;font-weight:700;box-shadow:0 5px 22px #003b7040;cursor:pointer}
+.bot-panel{display:none;position:fixed;right:22px;bottom:86px;width:min(390px,calc(100vw - 28px));height:min(560px,calc(100vh - 120px));z-index:1001;background:#fff;border:1px solid #dbe5ef;border-radius:18px;box-shadow:0 12px 45px #17314d35;overflow:hidden;flex-direction:column}
+.bot-panel.open{display:flex}.bot-head{background:linear-gradient(115deg,#003b70,#0055a4);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}.bot-head strong{font-size:16px}.bot-head small{display:block;color:#d9e9f7;margin-top:4px}.bot-close{border:0;background:transparent;color:#fff;font-size:24px;cursor:pointer}
+.bot-messages{padding:14px;overflow:auto;flex:1;background:#f5f8fc}.bot-msg{max-width:90%;padding:11px 13px;border-radius:13px;margin:0 0 10px;font-size:13px;line-height:1.5;white-space:pre-wrap}.bot-msg.bot{background:#fff;border:1px solid #e1e9f1;color:#233e59}.bot-msg.user{background:#dceeff;color:#123e68;margin-left:auto}.bot-results{display:grid;gap:8px;margin:8px 0 12px}.bot-result{background:#fff;border:1px solid #e0e8f0;border-radius:10px;padding:10px;font-size:12px}.bot-result strong{display:block;color:#183b5d;margin-bottom:7px}.bot-result a{display:inline-block;margin:2px 5px 0 0;padding:7px 9px;font-size:11px}.bot-input{display:flex;gap:8px;padding:12px;border-top:1px solid #e6edf4;background:#fff}.bot-input input{flex:1;min-width:0;border:1px solid #cbd8e5;border-radius:10px;padding:11px;font-size:13px}.bot-input button{border:0;border-radius:10px;background:#0055a4;color:#fff;padding:0 14px;font-weight:700}
+@media(max-width:520px){.bot-launch{right:14px;bottom:14px}.bot-panel{right:14px;bottom:76px}}
 
 </style></head><body>
 <header class="topbar">
@@ -283,6 +292,14 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
 </div>
 </div>
 </div>
+
+<button class="bot-launch" id="botLaunch" type="button">💬 Conversar com CPV Bot</button>
+<section class="bot-panel" id="botPanel" aria-label="CPV Bot">
+ <div class="bot-head"><div><strong>🤖 CPV Bot</strong><small>Seu assistente de treinamentos</small></div><button class="bot-close" id="botClose" aria-label="Fechar">×</button></div>
+ <div class="bot-messages" id="botMessages"><div class="bot-msg bot">Olá! Sou o CPV Bot. 😊\nMe diga o que você precisa encontrar. Ex.: “Como criar uma cerca eletrônica?”</div></div>
+ <form class="bot-input" id="botForm"><input id="botQuestion" autocomplete="off" placeholder="Digite sua pergunta..." aria-label="Sua pergunta"><button type="submit">Enviar</button></form>
+</section>
+
 <script>
 (function(){
  const input=document.getElementById('q');
@@ -353,6 +370,37 @@ body{font-family:Arial,sans-serif;background:#f4f7fb;color:#172b45;margin:0}
   search(input.value);
   input.focus();
  }));
+ // Conversa local: usa os mesmos 79 materiais já cadastrados no portal.
+ const panel=document.getElementById('botPanel');
+ const messages=document.getElementById('botMessages');
+ const botForm=document.getElementById('botForm');
+ const botQuestion=document.getElementById('botQuestion');
+ document.getElementById('botLaunch').addEventListener('click',()=>panel.classList.add('open'));
+ document.getElementById('botClose').addEventListener('click',()=>panel.classList.remove('open'));
+ function addMessage(text,who){const el=document.createElement('div');el.className='bot-msg '+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;}
+ function answerBot(question){
+  const q=normalize(question);
+  if(!q){addMessage('Digite uma dúvida para eu procurar nos treinamentos.', 'bot');return;}
+  input.value=question; search(question);
+  const matches=cards.filter(card=>card.style.display!=='none');
+  addMessage(question,'user');
+  if(!matches.length){addMessage('Não encontrei um treinamento com esses termos. Tente informar a plataforma (GF, RF, SASGC, TMS, Smart Câmeras ou Telemetria) ou usar palavras mais simples.','bot');return;}
+  addMessage('Encontrei '+matches.length+' treinamento(s) que podem ajudar. Confira os materiais abaixo:','bot');
+  const list=document.createElement('div');list.className='bot-results';
+  matches.slice(0,6).forEach(card=>{
+   const title=card.querySelector('h3')?.textContent?.trim()||'Treinamento';
+   const original=card.querySelector('a.abrir');
+   const share=card.querySelector('a.zap');
+   const item=document.createElement('div');item.className='bot-result';
+   const name=document.createElement('strong');name.textContent=title;item.appendChild(name);
+   if(original){const a=document.createElement('a');a.className='abrir';a.href=original.href;a.target='_blank';a.rel='noopener';a.textContent='▶ Abrir treinamento';item.appendChild(a);}
+   if(share){const a=document.createElement('a');a.className='zap';a.href=share.href;a.target='_blank';a.rel='noopener';a.textContent='📲 WhatsApp';item.appendChild(a);}
+   list.appendChild(item);
+  });
+  messages.appendChild(list);messages.scrollTop=messages.scrollHeight;
+ }
+ botForm.addEventListener('submit',event=>{event.preventDefault();answerBot(botQuestion.value);botQuestion.value='';});
  search('');
+ if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 })();
 </script></body></html>
